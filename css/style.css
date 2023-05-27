@@ -6,7 +6,6 @@ body {
   flex-flow: column nowrap;
   height: 100vh;
   height: 100svh;
-  height: 100dvh;
 }
 header, footer {
   flex: 0 0 auto;
