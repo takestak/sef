@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <title>東町町内会納涼祭 フード＆ドリンクメニュー</title>
+    <style>
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>東町町内会納涼祭</h1>
+    </header>
+    <main v-cloak>
+      <h2>フード＆ドリンクメニュー</h2>
+      <section id="menu">
+        <dl>
+          <div v-for="(item, id) in menu" :key="id">
+            <dt>{{item[0]}} <span class="price">({{item[1].toLocaleString()}}円)</span></dt>
+            <dd>
+              <div class="order-num">
+                <span class="button" text="-" @click="item[3] > 0 ? item[3]-- : false" :class="{disabled: item[3] <= 0}"></span>
+                <span class="number" v-text="item[3]"></span>
+                <span class="button" text="+" @click="item[3] < item[2] ? item[3]++ : false" :class="{disabled: item[3] >= item[2]}"></span>
+              </div>
+            </dd>
+          </div>
+        </dl>
+      </section>
+      <section id="total">
+        計
+        <span id="total-num">{{total.num}}個</span>
+        <span id="total-amount">{{total.amount.toLocaleString()}}円</span>
+      </section>
+    </main>
+    <footer>
+      &copy;東町町内会
+    </footer>
+    <script src="js/axios.min.js"></script>
+    <script type="module">
+      import { createApp } from './js/vue.esm-browser.prod.js'
+      const app = createApp({
+        data: () => ({
+          menu: [],
+        }),
+        created: async function() {
+          try {
+            this.menu = ( await axios.get( 'https://sheets.googleapis.com/v4/spreadsheets/1MvrrVp_Tfp4Mh5hysW4mTJvFgCTntWkbLx8QQMBqXIQ/values/menu?key=AIzaSyCJJgc6OA_wegFlhTMGZJwEu89h049E6pw' ) ).data.values
+          } catch ( error ) {
+              if ( window.confirm( "メニューを取得できませんでした。\n再取得を試みますか？" ) )
+                location.reload()
+          }
+        },
+        computed: {
+          total() {
+            return this.menu.reduce( ( total, item ) => {
+              return {
+                num: total.num + parseInt( item[3] ),
+                amount: total.amount + item[1] * item[3]
+              } },
+              { num: 0, amount: 0  }
+            ) },
+        }
+      }).mount( 'main' )
+    </script>
+  </body>
+</html>
