@@ -22,18 +22,19 @@
           <div v-for="(item, id) in menu" :key="id">
             <dt>{{item[0]}} <span class="price">({{item[1].toLocaleString()}}円)</span></dt>
             <dd>
-              <div class="order-num">
+              <div v-if="item[2] > 0" class="order-num">
                 <span class="button" text="-" @click="item[3] > 0 ? item[3]-- : false" :class="{disabled: item[3] <= 0}"></span>
                 <span class="number" v-text="item[3]"></span>
                 <span class="button" text="+" @click="item[3] < item[2] ? item[3]++ : false" :class="{disabled: item[3] >= item[2]}"></span>
               </div>
+              <div v-else class="sold-out">完売</div>
             </dd>
           </div>
         </dl>
       </section>
       <section id="total">
         計
-        <span id="total-num">{{total.num}}個</span>
+        <span id="total-num">{{total.num}}点</span>
         <span id="total-amount">{{total.amount.toLocaleString()}}円</span>
       </section>
     </main>
@@ -48,11 +49,20 @@
           menu: [],
         }),
         created: async function() {
-          try {
-            this.menu = ( await axios.get( 'https://sheets.googleapis.com/v4/spreadsheets/1MvrrVp_Tfp4Mh5hysW4mTJvFgCTntWkbLx8QQMBqXIQ/values/menu?key=AIzaSyCJJgc6OA_wegFlhTMGZJwEu89h049E6pw' ) ).data.values
-          } catch ( error ) {
-              if ( window.confirm( "メニューを取得できませんでした。\n再取得を試みますか？" ) )
-                location.reload()
+          let loop = true
+          while ( loop ) {
+            try {
+              const data = await axios.get( 'https://sheets.googleapis.com/v4/spreadsheets/1MvrrVp_Tfp4Mh5hysW4mTJvFgCTntWkbLx8QQMBqXIQ/values/menu?key=AIzaSyCJJgc6OA_wegFlhTMGZJwEu89h049E6pw' )
+              data.data.values.forEach( ( d ) => {
+                const tmp = []
+                for ( let i = 0; i < 4; i++ ) tmp.push( ( i in d ) ? d[ i ] : 0 )
+                this.menu.push( tmp )
+              })
+              loop = false
+            } catch ( error ) {
+              if ( ! window.confirm( "メニューを取得できませんでした。\n再取得を試みますか？" ) )
+                loop = false
+            }
           }
         },
         computed: {

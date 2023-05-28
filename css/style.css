@@ -72,7 +72,8 @@ dd::before {
   width: 100%;
   border-bottom: dotted 1px black;
 }
-.order-num {
+.order-num,
+.sold-out {
   display: inline;
   position: relative;
   padding-left: 10px;
@@ -98,6 +99,10 @@ dd::before {
   border-color: gray;
   color: gray;
   cursor: default;
+}
+.sold-out {
+  color: red;
+  font-weight: bold;
 }
 #total {
   margin: 0 -20px;
